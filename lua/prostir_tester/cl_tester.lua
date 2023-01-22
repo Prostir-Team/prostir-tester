@@ -47,8 +47,6 @@ do
 	end
 
 	function PANEL:SetClicked(clicked)
-		if not clicked then return end
-
 		self.Clicked = clicked
 	end
 
@@ -72,9 +70,15 @@ do
 		local round = ScreenScale(5)
 
 		if self:IsHovered() then
-			draw.RoundedBoxEx(round, round, 0, w - round, h, color_background_color_hovered, false, true, false, true)
+			surface.SetDrawColor(color_background_color_hovered)
+			surface.DrawRect(round, 0, w - round * 2, h)
+
+			draw.RoundedBoxEx(round, w - round, 0, round, h, color_background_color_hovered, false, true, false, true)
 		else
-			draw.RoundedBoxEx(round, round, 0, w - round, h, color_background_color, false, true, false, true)
+			surface.SetDrawColor(color_background_color)
+			surface.DrawRect(round, 0, w - round * 2, h)
+
+			draw.RoundedBoxEx(round, w - round, 0, round, h, color_background_color, false, true, false, true)
 		end
 
 		if self.Clicked then
@@ -101,8 +105,6 @@ do
 
 	function PANEL:Init()
 		self:Dock(FILL)
-		
-		self:MakePopup()
 
 		local startButton = vgui.Create("PRSBOX.Tester.Button", self)
 		if IsValid(startButton) then
@@ -110,7 +112,23 @@ do
 			
 			startButton:Dock(BOTTOM)
 			startButton:SetText("Почати тестування")
+
+			function startButton:OnClick()
+				local parent = self:GetParent()
+				if not IsValid(parent) then return end
+
+				parent:Start()
+			end
 		end
+	end
+
+	function PANEL:Start()
+		self:AlphaTo(0, 0.5, 0, function ()
+			local parent = self:GetParent()
+			if not IsValid(parent) then return end
+
+			parent:Start()
+		end)
 	end
 
 	function PANEL:PerformLayout(w, h)
@@ -121,9 +139,6 @@ do
 	end
 
 	function PANEL:Paint(w, h)
-		-- surface.SetDrawColor(Color(255, 0, 0))
-		-- surface.DrawRect(0, 0, w, h)
-
 		draw.DrawText("Вітаємо на Простір Sandbox!", "PRSBOX.Font.Main", w/2, 0, color_white, TEXT_ALIGN_CENTER)
 	end
 
@@ -139,21 +154,101 @@ do
 	
 	function PANEL:Init()
 		self:Dock(FILL)
+		self:MakePopup()
 
+		local testMenu = vgui.Create("DScrollPanel", self)
+		if IsValid(testMenu) then
+			self.TestMenu = testMenu
+			testMenu:Dock(FILL)
+		end
+		
 		local startMenu = vgui.Create("PRSBOX.Tester.Start", self)
 		if IsValid(startMenu) then
 			self.StartMenu = startMenu
 			startMenu:Dock(FILL)
 		end
+
+		self.PanelChildren = {}
+	end
+
+	function PANEL:Start()
+		local testSize = ScreenScale(12)
+		local offset = ScreenScale(5)
+		
+		local startMenu = self.StartMenu
+		if IsValid(startMenu) then
+			startMenu:Remove()
+		end
+
+		local testMenu = self.TestMenu
+		if IsValid(testMenu) then
+			local questions = table.GetKeys(self.TesterData)
+
+			for _, question in ipairs(questions) do
+				local questionLabel = vgui.Create("DLabel")
+				if not IsValid(questionLabel) then continue end
+				testMenu:AddItem(questionLabel)
+				
+				questionLabel:SetText(question)
+				questionLabel:SetFont("PRSBOX.Font.Second")
+				questionLabel:SetTextColor(color_white)
+				questionLabel:SetTall(testSize)
+				questionLabel:Dock(TOP)
+				questionLabel:DockMargin(0, 0, 0, offset)
+				
+				local grid = vgui.Create("EditablePanel")
+				if not IsValid(grid) then continue end
+				testMenu:AddItem(grid)
+
+				grid:SetTall(ScreenScale(20))
+				grid:Dock(TOP)
+				
+				local answers = table.GetKeys(self.TesterData[question])
+				for _, answer in ipairs(answers) do
+					local button = vgui.Create("PRSBOX.Tester.Button", grid)
+					if not IsValid(button) then continue end
+
+					button:SetText(answer)
+					button:SetWide((testMenu:GetWide() - offset * #answers) / #answers)
+					button:DockMargin(0, 0, offset, 0)
+					button:Dock(LEFT)
+
+					button.OnClick = function ()
+						local children = grid:GetChildren()
+						
+						for _, b in ipairs(children) do
+							b:SetClicked(false)
+							self.TesterData[question][b:GetText()] = false
+						end
+
+						button:SetClicked(true)
+
+						self.TesterData[question][button:GetText()] = true 
+					end
+				end
+			end
+		end
+	end
+
+	function PANEL:Setup(data)
+		self.TesterData = data
 	end
 
 	function PANEL:PerformLayout(w, h)
 		local leftRightMargin = ScreenScale(200)
 		local topDownMargin = ScreenScale(150)
+
+		local leftRightTestMargin = ScreenScale(100)
+		local topDownTestMargin = ScreenScale(10)
 		
 		local startMenu = self.StartMenu
 		if IsValid(startMenu) then
 			startMenu:DockMargin(leftRightMargin, topDownMargin, leftRightMargin, topDownMargin)
+		end
+		
+		local testMenu = self.TestMenu
+		if IsValid(testMenu) then
+			testMenu:DockMargin(leftRightTestMargin, topDownTestMargin, leftRightTestMargin, topDownTestMargin)
 		end
 	end
 
@@ -169,8 +264,9 @@ if IsValid(TEST_PANEL) then
 	TEST_PANEL:Remove()
 end
 
-concommand.Add("tester_run", function (ply, cmd, args)
-	if not IsValid(ply) then return end
+net.Receive("PRSBOX.Net.StartTester", function (len, ply)
+	local data = net.ReadTable()
 
 	TEST_PANEL = vgui.Create("PRSBOX.Tester.Main")
+	TEST_PANEL:Setup(data)
 end)
