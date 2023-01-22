@@ -64,7 +64,6 @@ do
 	function PANEL:PerformLayout(w, h)
 		local tallButton = ScreenScale(20)
 		local round = ScreenScale(5)
-		self:SetTextInset(round, 0)
 
 		self:SetTall(tallButton)
 	end
