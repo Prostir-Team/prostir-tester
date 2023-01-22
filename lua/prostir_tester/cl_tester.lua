@@ -222,7 +222,6 @@ do
 						end
 
 						button:SetClicked(true)
-
 						self.TesterData[question][button:GetText()] = true 
 					end
 				end
@@ -237,11 +236,11 @@ do
 				sendButton:DockMargin(0, offset, offset, 0)
 
 				sendButton.OnClick = function ()
-					
+					net.Start("PRSBOX.Net.CheckTester")
+						net.WriteTable(self.TesterData)
+					net.SendToServer()
 				end
 			end
-			
-
 		end
 	end
 

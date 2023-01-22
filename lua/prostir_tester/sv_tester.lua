@@ -1,4 +1,5 @@
 util.AddNetworkString("PRSBOX.Net.StartTester")
+util.AddNetworkString("PRSBOX.Net.CheckTester")
 
 local function checkPlayer(steamid)
 	local f = file.Open("complete_test.dat", "r", "DATA")
@@ -70,5 +71,26 @@ concommand.Add("start_tester", function (ply)
 end)
 
 net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
-	
+	local data = net.ReadTable()
+
+	local originalData = getTest()
+	local questions = table.GetKeys(data)
+
+	local rightAnswers = 0
+
+	for _, question in ipairs(questions) do
+		local answers = table.GetKeys(data[question])
+
+		for _, answer in ipairs(answers) do
+			if data[question][answer] == originalData[question][answer] and originalData[question][answer] then
+				rightAnswers = rightAnswers + 1
+			end
+		end
+	end
+
+	if rightAnswers >= #questions then
+		print("Welcome")
+	else
+		print("Fuck you fuckin' russian")
+	end
 end)
