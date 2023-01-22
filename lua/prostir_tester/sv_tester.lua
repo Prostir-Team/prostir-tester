@@ -68,3 +68,7 @@ concommand.Add("start_tester", function (ply)
 		net.WriteTable(data)
 	net.Send(ply)
 end)
+
+net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
+	
+end)

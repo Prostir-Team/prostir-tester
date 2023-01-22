@@ -227,6 +227,21 @@ do
 					end
 				end
 			end
+
+			local sendButton = vgui.Create("PRSBOX.Tester.Button")
+			if IsValid(sendButton) then
+				testMenu:AddItem(sendButton)
+				
+				sendButton:Dock(TOP)
+				sendButton:SetText("Відправити відповіді")
+				sendButton:DockMargin(0, offset, offset, 0)
+
+				sendButton.OnClick = function ()
+					
+				end
+			end
+			
+
 		end
 	end
 
