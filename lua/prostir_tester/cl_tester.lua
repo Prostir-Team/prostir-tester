@@ -24,11 +24,13 @@ local color_white = Color( 255, 255, 255 )
 local color_yellow = Color( 255, 255, 0 )
 local color_blue = Color( 100, 100, 200 )
 
-local color_background_color = Color( 0, 0, 0, 200 )
-local color_background_color_hovered = Color( 0, 0, 0, 230 )
+local color_background = Color( 0, 0, 0, 200 )
+local color_background_hovered = Color( 0, 0, 0, 230 )
 local color_gray = Color(126, 126, 126)
 
 local color_accept = Color(142, 255, 114)
+
+local color_timer = Color(34, 181, 255)
 
 --[[
 	Кнопка
@@ -70,24 +72,24 @@ do
 		local round = ScreenScale(5)
 
 		if self:IsHovered() then
-			surface.SetDrawColor(color_background_color_hovered)
+			surface.SetDrawColor(color_background_hovered)
 			surface.DrawRect(round, 0, w - round * 2, h)
 
-			draw.RoundedBoxEx(round, w - round, 0, round, h, color_background_color_hovered, false, true, false, true)
+			draw.RoundedBoxEx(round, w - round, 0, round, h, color_background_hovered, false, true, false, true)
 		else
-			surface.SetDrawColor(color_background_color)
+			surface.SetDrawColor(color_background)
 			surface.DrawRect(round, 0, w - round * 2, h)
 
-			draw.RoundedBoxEx(round, w - round, 0, round, h, color_background_color, false, true, false, true)
+			draw.RoundedBoxEx(round, w - round, 0, round, h, color_background, false, true, false, true)
 		end
 
 		if self.Clicked then
 			draw.RoundedBoxEx(round, 0, 0, round, h, color_accept, true, false, true, false)
 		else
 			if self:IsHovered() then
-				draw.RoundedBoxEx(round, 0, 0, round, h, color_background_color_hovered, true, false, true, false)
+				draw.RoundedBoxEx(round, 0, 0, round, h, color_background_hovered, true, false, true, false)
 			else
-				draw.RoundedBoxEx(round, 0, 0, round, h, color_background_color, true, false, true, false)
+				draw.RoundedBoxEx(round, 0, 0, round, h, color_background, true, false, true, false)
 			end
 		end
 		
@@ -118,6 +120,9 @@ do
 				if not IsValid(parent) then return end
 
 				parent:Start()
+
+				net.Start("PRSBOX.Net.ConfirmTester")
+				net.SendToServer()
 			end
 		end
 	end
@@ -129,13 +134,6 @@ do
 
 			parent:Start()
 		end)
-	end
-
-	function PANEL:PerformLayout(w, h)
-		local startButton = self.StartButton
-		if IsValid(startButton) then
-
-		end
 	end
 
 	function PANEL:Paint(w, h)
@@ -160,6 +158,19 @@ do
 		if IsValid(testMenu) then
 			self.TestMenu = testMenu
 			testMenu:Dock(FILL)
+			local vbar = testMenu:GetVBar()
+			
+			if IsValid(vbar) then
+				vbar:SetHideButtons(true)
+				
+				function vbar:Paint(w, h)
+					draw.RoundedBox(ScreenScale(5), 0, 0, w, h, color_background)
+				end
+				function vbar.btnGrip:Paint(w, h)
+					draw.RoundedBox(ScreenScale(5), 0, 0, w, h, color_background_hovered)
+				end
+			end
+			
 		end
 		
 		local startMenu = vgui.Create("PRSBOX.Tester.Start", self)
@@ -244,7 +255,9 @@ do
 				end
 			end
 
-			testMenu:AlphaTo(255, 0.5, 0)
+			testMenu:AlphaTo(255, 0.5, 0, function ()
+				self.Time = CurTime()
+			end)
 		end
 	end
 
@@ -253,6 +266,8 @@ do
 		if not IsValid(testMenu) then return end
 		testMenu:AlphaTo(0, 0.5, 0, function ()
 			testMenu:Remove()
+
+			self.Time = nil 
 
 			local endMenu = vgui.Create("EditablePanel", self)
 			if IsValid(endMenu) then
@@ -303,8 +318,17 @@ do
 	end
 
 	function PANEL:Paint(w, h)
-		surface.SetDrawColor(color_background_color)
+		local timerY = ScreenScale(5)
+		
+		surface.SetDrawColor(color_background)
 		surface.DrawRect(0, 0, w, h)
+
+		if not self.Time then return end
+
+		local time = (CurTime() - self.Time) / 100
+
+		surface.SetDrawColor(color_timer)
+		surface.DrawRect(0, h - timerY, ScrW() * time, timerY)
 	end
 
 	vgui.Register("PRSBOX.Tester.Main", PANEL, "EditablePanel")

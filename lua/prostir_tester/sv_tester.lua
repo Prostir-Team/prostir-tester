@@ -1,4 +1,5 @@
 util.AddNetworkString("PRSBOX.Net.StartTester")
+util.AddNetworkString("PRSBOX.Net.ConfirmTester")
 util.AddNetworkString("PRSBOX.Net.CheckTester")
 util.AddNetworkString("PRSBOX.Net.EndTester")
 
@@ -75,6 +76,15 @@ concommand.Add("test_check", function ()
 	print(checkPlayer("STEAM_0:0:35902724"))
 end)
 
+net.Receive("PRSBOX.Net.ConfirmTester", function (len, ply)
+	if not IsValid(ply) then return end
+	
+	timer.Simple(101, function ()
+		if not ply:GetNWBool("PRSBOX.Net.Tester") then return end
+		
+		ply:Kick("Ви не встигли пройти тестування")
+	end)
+end)
 
 net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 	local data = net.ReadTable()
