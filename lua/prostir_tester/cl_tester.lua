@@ -154,7 +154,7 @@ do
 
 	function PANEL:Init()
 		self:Dock(FILL)
-		
+
 	end
 
 	function PANEL:Start()
@@ -162,7 +162,7 @@ do
 	end
 
 	function PANEL:Paint(w, h)
-		draw.DrawText("Вітаємо на Простір Sandbox!", "PRSBOX.Font.Main", w/2, 0, color_white, TEXT_ALIGN_CENTER)
+		draw.DrawText("Приємної гри на простір Sandbox!", "PRSBOX.Font.Main", w/2, 0, color_white, TEXT_ALIGN_CENTER)
 	end
 
 	vgui.Register("PRSBOX.Tester.End", PANEL, "EditablePanel")
