@@ -1,0 +1,51 @@
+{
+	"lang": {
+		"lang": "en",
+		"prostir_welcome" : "Welcome to Prostir Sandbox!",
+		"prostir_button_start": "Start testing",
+		"prostir_button_end": "Send answers",
+		"prostir_accept": "You've completed test!\nHave fun playing on Prostir Sandbox!"
+	},
+	
+	"questions": {
+		"Crimea belongs to?" : {
+			"russia": false,
+			"Crimea": false,
+			"Ukraine": true
+		},
+	
+		"Who is putin?" : {
+			"shit": true,
+			"Tik tok bloger": false,
+			"Presedent of the world": false
+		},
+	
+		"Геноцид в Бучі, Ізюмі, Маріуполі та в інших містах України це?" : {
+			"Fake": false,
+			"True": true
+		},
+	
+		"Do you recognize the current composition of the lands of Moscow, after the accession of new lands?" : {
+			"Yes": false,
+			"No": true
+		},
+		
+		"The aggressor country in the Russian-Ukrainian war (since 2014) is?" : {
+			"USA": false,
+			"Ukraine": false,
+			"russia": true,
+			"Lithuania": false
+		},
+		
+		"Stepan Bandera was?" : {
+			"a nazi": false,
+			"a nationalist": true,
+			"a communist": false
+		},
+		
+		"Ukrainians and russians are brotherly nations?" : {
+			"Yes": false,
+			"No": true
+		}
+	}
+}

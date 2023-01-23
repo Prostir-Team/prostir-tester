@@ -110,10 +110,9 @@ do
 
 		local startButton = vgui.Create("PRSBOX.Tester.Button", self)
 		if IsValid(startButton) then
-			self.StartButton = startButtons
+			self.StartButton = startButton
 			
 			startButton:Dock(BOTTOM)
-			startButton:SetText("Почати тестування")
 
 			function startButton:OnClick()
 				local parent = self:GetParent()
@@ -127,6 +126,15 @@ do
 		end
 	end
 
+	function PANEL:Setup(lang)
+		self.TesterLang = lang
+		
+		local startButton = self.StartButton
+		if IsValid(startButton) then
+			startButton:SetText(self.TesterLang["prostir_button_start"])
+		end
+	end
+
 	function PANEL:Start()
 		self:AlphaTo(0, 0.5, 0, function ()
 			local parent = self:GetParent()
@@ -137,7 +145,10 @@ do
 	end
 
 	function PANEL:Paint(w, h)
-		draw.DrawText("Вітаємо на Простір Sandbox!", "PRSBOX.Font.Main", w/2, 0, color_white, TEXT_ALIGN_CENTER)
+		local lang = self.TesterLang
+		
+		if not lang then return end
+		draw.DrawText(lang["prostir_welcome"], "PRSBOX.Font.Main", w/2, 0, color_white, TEXT_ALIGN_CENTER)
 	end
 
 	vgui.Register("PRSBOX.Tester.Start", PANEL, "EditablePanel")
@@ -170,7 +181,6 @@ do
 					draw.RoundedBox(ScreenScale(5), 0, 0, w, h, color_background_hovered)
 				end
 			end
-			
 		end
 		
 		local startMenu = vgui.Create("PRSBOX.Tester.Start", self)
@@ -193,7 +203,7 @@ do
 
 		local testMenu = self.TestMenu
 		if IsValid(testMenu) then
-			local questions = table.GetKeys(self.TesterData)
+			local questions = table.GetKeys(self.TesterQuestions)
 
 			testMenu:SetAlpha(0)
 
@@ -216,7 +226,7 @@ do
 				grid:SetTall(ScreenScale(20))
 				grid:Dock(TOP)
 				
-				local answers = table.GetKeys(self.TesterData[question])
+				local answers = table.GetKeys(self.TesterQuestions[question])
 				for _, answer in ipairs(answers) do
 					local button = vgui.Create("PRSBOX.Tester.Button", grid)
 					if not IsValid(button) then continue end
@@ -231,11 +241,11 @@ do
 						
 						for _, b in ipairs(children) do
 							b:SetClicked(false)
-							self.TesterData[question][b:GetText()] = false
+							self.TesterData["questions"][question][b:GetText()] = false
 						end
 
 						button:SetClicked(true)
-						self.TesterData[question][button:GetText()] = true 
+						self.TesterData["questions"][question][button:GetText()] = true 
 					end
 				end
 			end
@@ -245,7 +255,7 @@ do
 				testMenu:AddItem(sendButton)
 				
 				sendButton:Dock(TOP)
-				sendButton:SetText("Відправити відповіді")
+				sendButton:SetText(self.TesterLang["prostir_button_end"])
 				sendButton:DockMargin(0, offset, offset, 0)
 
 				sendButton.OnClick = function ()
@@ -278,7 +288,10 @@ do
 				endMenu:Dock(FILL)
 
 				function endMenu:Paint(w, h)
-					draw.DrawText("Ви пройшли тест!\nПриємної гри на Простір Sandbox!", "PRSBOX.Font.Main", w/2, (h - ScreenScale(20) * 2)/2, color_accept, TEXT_ALIGN_CENTER)
+					local parent = self:GetParent()
+					if not IsValid(parent) then return end
+					
+					draw.DrawText(parent.TesterLang["prostir_accept"], "PRSBOX.Font.Main", w/2, (h - ScreenScale(20) * 2)/2, color_accept, TEXT_ALIGN_CENTER)
 				end
 
 				timer.Simple(5, function ()
@@ -292,6 +305,15 @@ do
 
 	function PANEL:Setup(data)
 		self.TesterData = data
+		
+		self.TesterLang = self.TesterData["lang"]
+		self.TesterQuestions = self.TesterData["questions"]
+		
+
+		local startMenu = self.StartMenu
+		if IsValid(startMenu) then
+			startMenu:Setup(self.TesterLang)
+		end
 	end
 
 	function PANEL:PerformLayout(w, h)
@@ -351,4 +373,10 @@ net.Receive("PRSBOX.Net.EndTester", function ()
 	if not IsValid(TEST_PANEL) then return end
 
 	TEST_PANEL:End()
+end)
+
+net.Receive("PRSBOX.Net.GetLang", function (len, ply)
+	local conLang = GetConVar("gmod_language")
+
+	RunConsoleCommand("prsotir_tester_lang", conLang:GetString())
 end)

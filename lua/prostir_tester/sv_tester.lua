@@ -2,6 +2,9 @@ util.AddNetworkString("PRSBOX.Net.StartTester")
 util.AddNetworkString("PRSBOX.Net.ConfirmTester")
 util.AddNetworkString("PRSBOX.Net.CheckTester")
 util.AddNetworkString("PRSBOX.Net.EndTester")
+util.AddNetworkString("PRSBOX.Net.GetLang")
+
+local defaultFilename = "cfg/en_tester.json"
 
 local function checkPlayer(steamid)
 	local f = file.Open("complete_test.dat", "r", "DATA")
@@ -14,10 +17,16 @@ local function checkPlayer(steamid)
 	return table.HasValue(data, steamid)
 end
 
-local function getTest()
-	if not file.Exists("cfg/tester.json", "GAME") then return end
+local function getTest(lang)
+	if not file.Exists(defaultFilename, "GAME") then return end
 	
-	local f = file.Open("cfg/tester.json", "r", "GAME")
+	local filename = "cfg/" .. lang .. "_tester.json"
+	
+	if not file.Exists(filename, "GAME") then 
+		filename =  defaultFilename
+	end
+
+	local f = file.Open(filename, "r", "GAME")
 	if not f then return end
 
 	local data = f:Read()
@@ -30,13 +39,13 @@ local function convertForClient(data)
 	
 	local dataToClient = data
 
-	for _, question in ipairs(table.GetKeys(dataToClient)) do
-		for k, answer in ipairs(table.GetKeys(dataToClient[question])) do
-			dataToClient[question][answer] = false 
+	for _, question in ipairs(table.GetKeys(dataToClient["questions"])) do
+		for k, answer in ipairs(table.GetKeys(dataToClient["questions"][question])) do
+			dataToClient["questions"][question][answer] = false
 		end
 	end
 
-	return dataToClient
+	return dataToClient	
 end
 
 local function addPlayerToFile(ply)
@@ -57,19 +66,16 @@ hook.Add("PlayerSpawn", "PRSBOX.Tester.CheckUser", function (ply)
 	if checkPlayer(ply:SteamID()) then return end
 
 	ply:SetNWBool("PRSBOX.Net.Tester", true)
-	
-	local data = getTest()
-	data = convertForClient(data)
-
-	net.Start("PRSBOX.Net.StartTester")
-		net.WriteTable(data)
-	net.Send(ply)
-
 	ply:KillSilent()
+
+	net.Start("PRSBOX.Net.GetLang")
+	net.Send(ply)
 end)
 
 hook.Add("PlayerDeathThink", "PRSBOX.Tester.SpawnCencel", function (ply)
-	return not ply:GetNWBool("PRSBOX.Net.Tester")
+	if ply:GetNWBool("PRSBOX.Net.Tester") then
+		return true 
+	end
 end)
 
 concommand.Add("test_check", function ()
@@ -89,16 +95,16 @@ end)
 net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 	local data = net.ReadTable()
 
-	local originalData = getTest()
-	local questions = table.GetKeys(data)
+	local originalData = getTest(data["lang"]["lang"])
+	local questions = table.GetKeys(data["questions"])
 
 	local rightAnswers = 0
 
 	for _, question in ipairs(questions) do
-		local answers = table.GetKeys(data[question])
+		local answers = table.GetKeys(data["questions"][question])
 
 		for _, answer in ipairs(answers) do
-			if data[question][answer] == originalData[question][answer] and originalData[question][answer] then
+			if data["questions"][question][answer] == originalData["questions"][question][answer] and originalData["questions"][question][answer] then
 				rightAnswers = rightAnswers + 1
 			end
 		end
@@ -117,4 +123,18 @@ net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 	else
 		ply:Kick("Ви не пройшли тестування")
 	end
+end)
+
+concommand.Add("prsotir_tester_lang", function (ply, cmd, args)
+	if not IsValid(ply) then return end
+	if not ply:GetNWBool("PRSBOX.Net.Tester") then return end
+	
+	local lang = args[1]
+
+	local data = getTest(lang)
+	data = convertForClient(data)
+
+	net.Start("PRSBOX.Net.StartTester")
+		net.WriteTable(data)
+	net.Send(ply)
 end)
