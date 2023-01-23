@@ -1,5 +1,3 @@
-print("Tester client has started")
-
 --[[
 	Шрифти
 --]]
@@ -53,6 +51,8 @@ do
 	function PANEL:DoClick()
 		self:SetClicked(true)
 		self:OnClick()
+
+		surface.PlaySound("UI/buttonclick.wav")
 	end
 
 	function PANEL:OnClick()
@@ -146,29 +146,6 @@ do
 end
 
 --[[
-	Кінцева панель
---]]
-
-do
-	local PANEL = {}
-
-	function PANEL:Init()
-		self:Dock(FILL)
-
-	end
-
-	function PANEL:Start()
-
-	end
-
-	function PANEL:Paint(w, h)
-		draw.DrawText("Приємної гри на простір Sandbox!", "PRSBOX.Font.Main", w/2, 0, color_white, TEXT_ALIGN_CENTER)
-	end
-
-	vgui.Register("PRSBOX.Tester.End", PANEL, "EditablePanel")
-end
-
---[[
 	Основна панель
 --]]
 
@@ -206,6 +183,8 @@ do
 		local testMenu = self.TestMenu
 		if IsValid(testMenu) then
 			local questions = table.GetKeys(self.TesterData)
+
+			testMenu:SetAlpha(0)
 
 			for _, question in ipairs(questions) do
 				local questionLabel = vgui.Create("DLabel")
@@ -264,11 +243,36 @@ do
 					net.SendToServer()
 				end
 			end
+
+			testMenu:AlphaTo(255, 0.5, 0)
 		end
 	end
 
 	function PANEL:End()
-		self:Remove()
+		local testMenu = self.TestMenu
+		if not IsValid(testMenu) then return end
+		testMenu:AlphaTo(0, 0.5, 0, function ()
+			testMenu:Remove()
+
+			local endMenu = vgui.Create("EditablePanel", self)
+			if IsValid(endMenu) then
+				self.EndMenu = endMenu
+
+				endMenu:SetAlpha(0)
+				endMenu:AlphaTo(255, 0.5, 0)
+				endMenu:Dock(FILL)
+
+				function endMenu:Paint(w, h)
+					draw.DrawText("Ви пройшли тест!\nПриємної гри на Простір Sandbox!", "PRSBOX.Font.Main", w/2, (h - ScreenScale(20) * 2)/2, color_accept, TEXT_ALIGN_CENTER)
+				end
+
+				timer.Simple(5, function ()
+					self:AlphaTo(0, 0.5, 0, function ()
+						self:Remove()
+					end)
+				end)
+			end
+		end)
 	end
 
 	function PANEL:Setup(data)
@@ -290,6 +294,11 @@ do
 		local testMenu = self.TestMenu
 		if IsValid(testMenu) then
 			testMenu:DockMargin(leftRightTestMargin, topDownTestMargin, leftRightTestMargin, topDownTestMargin)
+		end
+
+		local endMenu = self.EndMenu
+		if IsValid(endMenu) then
+			endMenu:DockMargin(leftRightTestMargin, topDownMargin, leftRightTestMargin, topDownMargin)
 		end
 	end
 

@@ -100,9 +100,11 @@ net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 		net.Start("PRSBOX.Net.EndTester")
 		net.Send(ply)
 
-		ply:SetNWBool("PRSBOX.Net.Tester", false)
-		ply:Spawn()
+		timer.Simple(6, function ()
+			ply:SetNWBool("PRSBOX.Net.Tester", false)
+			ply:Spawn()
+		end)
 	else
-		
+		ply:Kick("Ви не пройшли тестування")
 	end
 end)
