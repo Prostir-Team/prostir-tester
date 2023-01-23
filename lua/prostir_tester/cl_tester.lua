@@ -146,6 +146,29 @@ do
 end
 
 --[[
+	Кінцева панель
+--]]
+
+do
+	local PANEL = {}
+
+	function PANEL:Init()
+		self:Dock(FILL)
+		
+	end
+
+	function PANEL:Start()
+
+	end
+
+	function PANEL:Paint(w, h)
+		draw.DrawText("Вітаємо на Простір Sandbox!", "PRSBOX.Font.Main", w/2, 0, color_white, TEXT_ALIGN_CENTER)
+	end
+
+	vgui.Register("PRSBOX.Tester.End", PANEL, "EditablePanel")
+end
+
+--[[
 	Основна панель
 --]]
 
@@ -244,6 +267,10 @@ do
 		end
 	end
 
+	function PANEL:End()
+		self:Remove()
+	end
+
 	function PANEL:Setup(data)
 		self.TesterData = data
 	end
@@ -279,8 +306,16 @@ if IsValid(TEST_PANEL) then
 end
 
 net.Receive("PRSBOX.Net.StartTester", function (len, ply)
+	if IsValid(TEST_PANEL) then return end
+	
 	local data = net.ReadTable()
 
 	TEST_PANEL = vgui.Create("PRSBOX.Tester.Main")
 	TEST_PANEL:Setup(data)
+end)
+
+net.Receive("PRSBOX.Net.EndTester", function ()
+	if not IsValid(TEST_PANEL) then return end
+
+	TEST_PANEL:End()
 end)

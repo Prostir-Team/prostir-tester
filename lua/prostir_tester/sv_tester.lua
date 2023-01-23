@@ -1,5 +1,6 @@
 util.AddNetworkString("PRSBOX.Net.StartTester")
 util.AddNetworkString("PRSBOX.Net.CheckTester")
+util.AddNetworkString("PRSBOX.Net.EndTester")
 
 local function checkPlayer(steamid)
 	local f = file.Open("complete_test.dat", "r", "DATA")
@@ -15,7 +16,7 @@ end
 local function getTest()
 	if not file.Exists("cfg/tester.json", "GAME") then return end
 	
-	local f = file.Open("cfg//tester.json", "r", "GAME")
+	local f = file.Open("cfg/tester.json", "r", "GAME")
 	if not f then return end
 
 	local data = f:Read()
@@ -37,38 +38,43 @@ local function convertForClient(data)
 	return dataToClient
 end
 
+local function addPlayerToFile(ply)
+	if not IsValid(ply) then return end
+	local steamid = ply:SteamID()
+
+	file.Append("complete_test.dat", steamid .. "\n")
+end
+
 hook.Add("Initialize", "PRSBOX.Tester.CreateFile", function ()
 	if file.Exists("complete_test.dat", "DATA") then return end
 
 	file.Write("complete_test.dat", "")
 end)
 
-hook.Add("PlayerInitialSpawn", "PRSBOX.Tester.CheckUser", function (ply)
-	
-end)
-
-hook.Add("PlayerDeathThink", "PRSBOX.Tester.SpawnCencel", function (ply)
-	
-end)
-
-concommand.Add("test_check", function ()
-	print(checkPlayer("STEAM_0:0:35902724"))
-end)
-
-concommand.Add("start_tester", function (ply)
+hook.Add("PlayerSpawn", "PRSBOX.Tester.CheckUser", function (ply)
 	if not IsValid(ply) then return end
 	if checkPlayer(ply:SteamID()) then return end
 
 	ply:SetNWBool("PRSBOX.Net.Tester", true)
 	
 	local data = getTest()
-
 	data = convertForClient(data)
 
 	net.Start("PRSBOX.Net.StartTester")
 		net.WriteTable(data)
 	net.Send(ply)
+
+	ply:KillSilent()
 end)
+
+hook.Add("PlayerDeathThink", "PRSBOX.Tester.SpawnCencel", function (ply)
+	return not ply:GetNWBool("PRSBOX.Net.Tester")
+end)
+
+concommand.Add("test_check", function ()
+	print(checkPlayer("STEAM_0:0:35902724"))
+end)
+
 
 net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 	local data = net.ReadTable()
@@ -89,8 +95,14 @@ net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 	end
 
 	if rightAnswers >= #questions then
-		print("Welcome")
+		addPlayerToFile(ply)
+		
+		net.Start("PRSBOX.Net.EndTester")
+		net.Send(ply)
+
+		ply:SetNWBool("PRSBOX.Net.Tester", false)
+		ply:Spawn()
 	else
-		print("Fuck you fuckin' russian")
+		
 	end
 end)
