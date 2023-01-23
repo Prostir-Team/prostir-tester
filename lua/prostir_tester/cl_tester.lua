@@ -47,7 +47,12 @@ do
 	end
 
 	function PANEL:SetClicked(clicked)
-		self.Clicked = clicked
+		if clicked then
+			self:SetColor(color_accept)
+			return 
+		end
+
+		self:SetColor(color_white)
 	end
 
 	function PANEL:DoClick()
@@ -72,27 +77,10 @@ do
 		local round = ScreenScale(5)
 
 		if self:IsHovered() then
-			surface.SetDrawColor(color_background_hovered)
-			surface.DrawRect(round, 0, w - round * 2, h)
-
-			draw.RoundedBoxEx(round, w - round, 0, round, h, color_background_hovered, false, true, false, true)
+			draw.RoundedBox(round, 0, 0, w, h, color_background_hovered)
 		else
-			surface.SetDrawColor(color_background)
-			surface.DrawRect(round, 0, w - round * 2, h)
-
-			draw.RoundedBoxEx(round, w - round, 0, round, h, color_background, false, true, false, true)
+			draw.RoundedBox(round, 0 , 0, w, h, color_background)
 		end
-
-		if self.Clicked then
-			draw.RoundedBoxEx(round, 0, 0, round, h, color_accept, true, false, true, false)
-		else
-			if self:IsHovered() then
-				draw.RoundedBoxEx(round, 0, 0, round, h, color_background_hovered, true, false, true, false)
-			else
-				draw.RoundedBoxEx(round, 0, 0, round, h, color_background, true, false, true, false)
-			end
-		end
-		
 	end
 
 	vgui.Register("PRSBOX.Tester.Button", PANEL, "DButton")

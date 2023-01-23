@@ -4,7 +4,7 @@
 		"prostir_welcome" : "Welcome to Prostir Sandbox!",
 		"prostir_button_start": "Start testing",
 		"prostir_button_end": "Send answers",
-		"prostir_accept": "You've completed test!\nHave fun playing on Prostir Sandbox!"
+		"prostir_accept": "You've completed test right!\nHave fun playing on Prostir Sandbox!"
 	},
 	
 	"questions": {
@@ -20,7 +20,7 @@
 			"Presedent of the world": false
 		},
 	
-		"Геноцид в Бучі, Ізюмі, Маріуполі та в інших містах України це?" : {
+		"Genocide in Buchф, Izyum, Mariupol and other cities of Ukraine is?" : {
 			"Fake": false,
 			"True": true
 		},

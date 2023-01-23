@@ -121,7 +121,7 @@ net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 			ply:Spawn()
 		end)
 	else
-		ply:Kick("Ви не пройшли тестування")
+		RunConsoleCommand("ulx", "kick", ply:Nick("Ви не пройшли тестування"))
 	end
 end)
 
