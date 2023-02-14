@@ -4,7 +4,7 @@ util.AddNetworkString("PRSBOX.Net.CheckTester")
 util.AddNetworkString("PRSBOX.Net.EndTester")
 util.AddNetworkString("PRSBOX.Net.GetLang")
 
-local defaultFilename = "cfg/en_tester.json"
+local defaultFilename = "cfg/uk_tester.json"
 
 local function checkPlayer(steamid)
 	local f = file.Open("complete_test.dat", "r", "DATA")
@@ -121,7 +121,7 @@ net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 			ply:Spawn()
 		end)
 	else
-		RunConsoleCommand("ulx", "kick", ply:Nick("Ви не пройшли тестування"))
+		RunConsoleCommand("ulx", "ban", ply:Nick("На жаль ви не пройшли тестування!\nЯкщо ви з чимось не згодні, будь ласка, завітайте до діскорд серверу, та поставте запитання модераторам або Сванчіку.\nhttps://discord.gg/stV4JswQ9Q "))
 	end
 end)
 
