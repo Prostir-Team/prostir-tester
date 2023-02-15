@@ -6,6 +6,8 @@ util.AddNetworkString("PRSBOX.Net.GetLang")
 
 local defaultFilename = "cfg/uk_tester.json"
 
+local canDoMistakes = 1
+
 local function checkPlayer(steamid)
 	local f = file.Open("complete_test.dat", "r", "DATA")
 	if not f then return end
@@ -110,7 +112,7 @@ net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 		end
 	end
 
-	if rightAnswers >= #questions then
+	if rightAnswers >= #questions - canDoMistakes then
 		addPlayerToFile(ply)
 		
 		net.Start("PRSBOX.Net.EndTester")
