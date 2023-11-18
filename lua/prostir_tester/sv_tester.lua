@@ -123,7 +123,7 @@ net.Receive("PRSBOX.Net.CheckTester", function (len, ply)
 			ply:Spawn()
 		end)
 	else
-		RunConsoleCommand("ulx", "ban", ply:Nick("На жаль ви не пройшли тестування!\nЯкщо ви з чимось не згодні, будь ласка, завітайте до діскорд серверу, та поставте запитання модераторам або Сванчіку.\nhttps://discord.gg/stV4JswQ9Q "))
+		RunConsoleCommand("ulx", "ban", ply:Nick(), "60", "На жаль ви не пройшли тестування!\nЯкщо ви з чимось не згодні, будь ласка, завітайте до діскорд серверу, та поставте запитання модераторам або Сванчіку.\nhttps://discord.gg/stV4JswQ9Q")
 	end
 end)
 
